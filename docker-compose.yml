@@ -1,0 +1,52 @@
+version: "3.3"
+
+networks:
+  cluster_net:
+    external:
+      name: cassandra-net  
+  
+services:  
+
+  ################################################################
+  # The Casandra cluster 
+  #   - cassandra-node1
+  ################################################################        
+  cassandra-001:
+    image: lucasfs/cassandra-armhf
+    environment:
+      CASSANDRA_BROADCAST_ADDRESS: "cassandra-001"
+    deploy:
+      restart_policy:
+        condition: on-failure
+        max_attempts: 3
+        window: 120s
+      placement:
+        preferences:
+          - spread: node.labels.datacenter
+    volumes:
+        - /mnt/storage/cassandra:/var/lib/cassandra 
+    networks:
+      - cluster_net
+    
+
+  ################################################################
+  # The Casandra cluster 
+  #   - cassandra-node2
+  ################################################################        
+  cassandra-002:
+    image: lucasfs/cassandra-armhf
+    environment:
+      CASSANDRA_BROADCAST_ADDRESS: "cassandra-002"
+      CASSANDRA_SEEDS: "cassandra-001"
+    deploy:
+      restart_policy:
+        condition: on-failure
+        max_attempts: 3
+        window: 120s
+      placement:
+        preferences:
+          - spread: node.labels.datacenter
+    volumes:
+        - /mnt/storage/cassandra:/var/lib/cassandra 
+    networks:
+      - cluster_net
