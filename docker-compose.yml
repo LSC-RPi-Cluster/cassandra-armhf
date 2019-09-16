@@ -4,7 +4,7 @@ networks:
   cluster_net:
     external:
       name: cassandra-net  
-  
+
 services:  
 
   ################################################################
@@ -14,7 +14,9 @@ services:
   cassandra-001:
     image: lucasfs/cassandra-armhf
     environment:
-      CASSANDRA_BROADCAST_ADDRESS: "cassandra-001"
+      - CASSANDRA_BROADCAST_ADDRESS=cassandra-001
+      - MAX_HEAP_SIZE=100m
+      - HEAP_NEWSIZE=10m
     deploy:
       restart_policy:
         condition: on-failure
@@ -24,11 +26,16 @@ services:
         preferences:
           - spread: node.labels.datacenter
     volumes:
-        - /mnt/storage/cassandra:/var/lib/cassandra 
+      - /mnt/storage/cassandra:/var/lib/cassandra 
     networks:
       - cluster_net
+    ports:
+      - "7000:7000"
+      - "7001:7001"
+      - "7199:7199"
+      - "9042:9042"
+      - "9160:9160"
     
-
   ################################################################
   # The Casandra cluster 
   #   - cassandra-node2
@@ -36,8 +43,10 @@ services:
   cassandra-002:
     image: lucasfs/cassandra-armhf
     environment:
-      CASSANDRA_BROADCAST_ADDRESS: "cassandra-002"
-      CASSANDRA_SEEDS: "cassandra-001"
+      - CASSANDRA_BROADCAST_ADDRESS=cassandra-002
+      - CASSANDRA_SEEDS=cassandra-001
+      - MAX_HEAP_SIZE=100m
+      - HEAP_NEWSIZE=10m
     deploy:
       restart_policy:
         condition: on-failure
@@ -47,6 +56,6 @@ services:
         preferences:
           - spread: node.labels.datacenter
     volumes:
-        - /mnt/storage/cassandra:/var/lib/cassandra 
+      - /mnt/storage/cassandra:/var/lib/cassandra 
     networks:
       - cluster_net

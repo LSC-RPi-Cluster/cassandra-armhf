@@ -1,6 +1,8 @@
-FROM arm32v7/debian:buster-slim
+FROM arm32v7/ubuntu:18.04
 
 MAINTAINER Lucas Ferreira da Silva <lferreira@inf.ufsm.br>
+
+ARG DEBIAN_FRONTEND=noninteractive
 
 # explicitly set user/group IDs
 RUN groupadd -r cassandra --gid=999 && useradd -r -g cassandra --uid=999 cassandra
@@ -10,13 +12,14 @@ RUN set -eux; \
 	apt-get install -y --no-install-recommends \
 		gnupg dirmngr \
 # solves warning: "jemalloc shared library could not be preloaded to speed up memory allocations"
-		libjemalloc2 \
+		libjemalloc1 \
 # free is used by cassandra-env.sh
 		procps \
 # "ip" is not required by Cassandra itself, but is commonly used in scripting Cassandra's configuration (since it is so fixated on explicit IP addresses)
 		iproute2 \
 	; \
 	rm -rf /var/lib/apt/lists/*
+
 # grab gosu for easy step-down from root
 ENV GOSU_VERSION 1.10
 RUN set -eux; \
@@ -152,8 +155,6 @@ RUN set -eux; \
 	\
 # https://issues.apache.org/jira/browse/CASSANDRA-11661
 	sed -ri 's/^(JVM_PATCH_VERSION)=.*/\1=25/' "$CASSANDRA_CONFIG/cassandra-env.sh"
-
-RUN sed -i 's/-XX:ThreadPriorityPolicy=42/# -XX:ThreadPriorityPolicy=42/g' $CASSANDRA_CONFIG/jvm.options
 
 COPY docker-entrypoint.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
