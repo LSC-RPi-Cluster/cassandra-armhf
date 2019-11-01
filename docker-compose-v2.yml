@@ -1,0 +1,150 @@
+version: '3'
+
+##################################################################
+# Join containers to external network
+################################################################## 
+networks:
+  cluster_net:
+    external:
+      name: cassandra-net  
+
+services:
+  
+  ###################################
+  #   cassandra-seed (Nvidia TX2)   #
+  ###################################
+  cassandra-seed:
+    image: mcfongtw/rpi-cassandra:3.11
+    volumes:
+      - /cassandra-data:/var/lib/cassandra
+    environment:
+      ##################################################################
+      # Cluster Name
+      ################################################################## 
+      - CASSANDRA_CLUSTER_NAME=CassandraPI
+
+      ##################################################################
+      # Extra parameters to enable JMX server for monitoring purposes
+      - LOCAL_JMX=no
+      # TODO: better to have hostname dynamically loaded.
+      - JVM_EXTRA_OPTS=-Djava.rmi.server.hostname=cassandra-seed
+      ##################################################################
+
+      ################################################################## 
+      # Expose the C* broadcast address for seed connection
+      - CASSANDRA_BROADCAST_ADDRESS=cassandra-seed
+      #- CASSANDRA_SEEDS=192.168.2.xx
+      ##################################################################
+
+      ################################################################## 
+      # Number of tokens assigned to this node on the ring using vnodes. 
+      - CASSANDRA_NUM_TOKENS=8
+      ##################################################################
+
+      ##################################################################
+      # Heap size
+      #    Xmx=Xms=MAX_HEAP_SIZE
+      #    Xmn=HEAP_NEWSIZE
+      - MAX_HEAP_SIZE=384m
+      - HEAP_NEWSIZE=96m
+      ##################################################################
+    ports:
+      # 7000: intra-node communication
+      - "7000:7000"
+      # 7001: TLS intra-node communication
+      - "7001:7001"
+      # 9042: CQL
+      - "9042:9042"
+      # 9160: thrift service
+      - "9160:9160"
+      # 7199: JMX
+      - "7199:7199"
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+      placement:
+        constraints:
+          - node.hostname == tegra-ubuntu
+
+  ##############################
+  #   cassandra-001 (rpi-01)   #
+  ##############################
+  cassandra-001:
+    image: mcfongtw/rpi-cassandra:3.11
+    volumes:
+      - /mnt/storage/cassandra:/var/lib/cassandra
+    environment:
+      - CASSANDRA_CLUSTER_NAME=CassandraPI
+      - LOCAL_JMX=no
+      - JVM_EXTRA_OPTS=-Djava.rmi.server.hostname=cassandra-001
+      - CASSANDRA_BROADCAST_ADDRESS=cassandra-001
+      - CASSANDRA_NUM_TOKENS=8
+      - CASSANDRA_SEEDS=cassandra-seed
+      - MAX_HEAP_SIZE=384m
+      - HEAP_NEWSIZE=96m
+
+    ports:
+      # 7000: intra-node communication
+      - "7000:7000"
+      # 7001: TLS intra-node communication
+      - "7001:7001"
+      # 9042: CQL
+      - "9042:9042"
+      # 9160: thrift service
+      - "9160:9160"
+      # 7199: JMX
+      - "7199:7199"
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+      placement:
+        constraints:
+          - node.hostname == rpi-01
+
+  ##############################
+  #   cassandra-002 (rpi-02)   #
+  ##############################
+  cassandra-002:
+
+    image: mcfongtw/rpi-cassandra:3.11
+
+    volumes:
+      - /mnt/storage/cassandra:/var/lib/cassandra
+
+    environment:
+      - CASSANDRA_CLUSTER_NAME=CassandraPI
+      - LOCAL_JMX=no
+      - JVM_EXTRA_OPTS=-Djava.rmi.server.hostname=cassandra-002
+      - CASSANDRA_BROADCAST_ADDRESS=cassandra-002
+      - CASSANDRA_NUM_TOKENS=8
+      - CASSANDRA_SEEDS=cassandra-seed
+      - MAX_HEAP_SIZE=384m
+      - HEAP_NEWSIZE=96m
+
+    ports:
+      # 7000: intra-node communication
+      - "7000:7000"
+      # 7001: TLS intra-node communication
+      - "7001:7001"
+      # 9042: CQL
+      - "9042:9042"
+      # 9160: thrift service
+      - "9160:9160"
+      # 7199: JMX
+      - "7199:7199"
+
+    deploy:
+      restart_policy:
+        condition: on-failure
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+      placement:
+        constraints:
+          - node.hostname == rpi-02
