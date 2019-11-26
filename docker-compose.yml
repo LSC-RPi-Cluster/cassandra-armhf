@@ -4,7 +4,7 @@ networks:
   cluster_net:
     external:
       name: cassandra-net  
-
+  
 services:  
 
   ################################################################
@@ -14,48 +14,68 @@ services:
   cassandra-001:
     image: lucasfs/cassandra-armhf
     environment:
-      - CASSANDRA_BROADCAST_ADDRESS=cassandra-001
-      - MAX_HEAP_SIZE=100m
-      - HEAP_NEWSIZE=10m
+      CASSANDRA_BROADCAST_ADDRESS: "cassandra-001"
+      HEAP_NEWSIZE: 12M
+      MAX_HEAP_SIZE: 64M
     deploy:
       restart_policy:
         condition: on-failure
         max_attempts: 3
         window: 120s
       placement:
-        preferences:
-          - spread: node.labels.datacenter
+        constraints:
+          - node.hostname == rpi-03
     volumes:
-      - /mnt/storage/cassandra:/var/lib/cassandra 
+        - /mnt/storage/cassandra:/var/lib/cassandra 
     networks:
       - cluster_net
-    ports:
-      - "7000:7000"
-      - "7001:7001"
-      - "7199:7199"
-      - "9042:9042"
-      - "9160:9160"
-    
+
   ################################################################
   # The Casandra cluster 
   #   - cassandra-node2
   ################################################################        
   cassandra-002:
     image: lucasfs/cassandra-armhf
+    command: /bin/bash -c "echo 'Waiting for seed node' && sleep 90 && /docker-entrypoint.sh cassandra -f"
     environment:
-      - CASSANDRA_BROADCAST_ADDRESS=cassandra-002
-      - CASSANDRA_SEEDS=cassandra-001
-      - MAX_HEAP_SIZE=100m
-      - HEAP_NEWSIZE=10m
+      CASSANDRA_BROADCAST_ADDRESS: "cassandra-002"
+      CASSANDRA_SEEDS: "cassandra-001"
+      HEAP_NEWSIZE: 12M
+      MAX_HEAP_SIZE: 64M    
     deploy:
       restart_policy:
         condition: on-failure
         max_attempts: 3
         window: 120s
       placement:
-        preferences:
-          - spread: node.labels.datacenter
+        constraints:
+          - node.hostname == rpi-01
     volumes:
-      - /mnt/storage/cassandra:/var/lib/cassandra 
+        - /mnt/storage/cassandra:/var/lib/cassandra 
+    networks:
+      - cluster_net
+
+  ################################################################
+  # The Casandra cluster
+  #   - cassandra-node3
+  ################################################################
+  cassandra-003:
+    image: lucasfs/cassandra-armhf
+    command: /bin/bash -c "echo 'Waiting for seed node' && sleep 180 && /docker-entrypoint.sh cassandra -f"
+    environment:
+      CASSANDRA_BROADCAST_ADDRESS: "cassandra-003"
+      CASSANDRA_SEEDS: "cassandra-001"
+      HEAP_NEWSIZE: 12M
+      MAX_HEAP_SIZE: 64M
+    deploy:
+      restart_policy:
+        condition: on-failure
+        max_attempts: 3
+        window: 120s
+      placement:
+        constraints:
+          - node.hostname == rpi-02
+    volumes:
+        - /mnt/storage/cassandra:/var/lib/cassandra
     networks:
       - cluster_net
