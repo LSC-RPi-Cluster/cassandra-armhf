@@ -26,7 +26,9 @@ services:
         constraints:
           - node.hostname == rpi-03
     volumes:
-        - /mnt/storage/cassandra:/var/lib/cassandra 
+      - /mnt/storage/cassandra:/var/lib/cassandra 
+    ports:
+      - "9042:9042"
     networks:
       - cluster_net
 
@@ -36,7 +38,7 @@ services:
   ################################################################        
   cassandra-002:
     image: lucasfs/cassandra-armhf
-    command: /bin/bash -c "echo 'Waiting for seed node' && sleep 90 && /docker-entrypoint.sh cassandra -f"
+    command: /bin/bash -c "echo 'Waiting for seed node' && sleep 60 && /docker-entrypoint.sh cassandra -f"
     environment:
       CASSANDRA_BROADCAST_ADDRESS: "cassandra-002"
       CASSANDRA_SEEDS: "cassandra-001"
@@ -51,7 +53,9 @@ services:
         constraints:
           - node.hostname == rpi-01
     volumes:
-        - /mnt/storage/cassandra:/var/lib/cassandra 
+      - /mnt/storage/cassandra:/var/lib/cassandra 
+ #   ports:
+ #     - "9043:9042" 
     networks:
       - cluster_net
 
@@ -61,7 +65,7 @@ services:
   ################################################################
   cassandra-003:
     image: lucasfs/cassandra-armhf
-    command: /bin/bash -c "echo 'Waiting for seed node' && sleep 180 && /docker-entrypoint.sh cassandra -f"
+    command: /bin/bash -c "echo 'Waiting for seed node' && sleep 280 && /docker-entrypoint.sh cassandra -f"
     environment:
       CASSANDRA_BROADCAST_ADDRESS: "cassandra-003"
       CASSANDRA_SEEDS: "cassandra-001"
@@ -76,6 +80,36 @@ services:
         constraints:
           - node.hostname == rpi-02
     volumes:
-        - /mnt/storage/cassandra:/var/lib/cassandra
+      - /mnt/storage/cassandra:/var/lib/cassandra
+#    ports:
+#      - "9044:9042"
     networks:
       - cluster_net
+
+  ################################################################
+  # The Casandra cluster
+  #   - cassandra-node4
+  ################################################################
+  cassandra-004:
+    image: lucasfs/cassandra-armhf
+    command: /bin/bash -c "echo 'Waiting for seed node' && sleep 380 && /docker-entrypoint.sh cassandra -f"
+    environment:
+      CASSANDRA_BROADCAST_ADDRESS: "cassandra-004"
+      CASSANDRA_SEEDS: "cassandra-001"
+      HEAP_NEWSIZE: 12M
+      MAX_HEAP_SIZE: 64M
+    deploy:
+      restart_policy:
+        condition: on-failure
+        max_attempts: 3
+        window: 120s
+      placement:
+        constraints:
+          - node.hostname == rpi-04
+    volumes:
+      - /mnt/storage/cassandra:/var/lib/cassandra
+#    ports:
+#      - "9045:9042"
+    networks:
+      - cluster_net
+
