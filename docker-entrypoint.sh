@@ -1,6 +1,9 @@
 #!/bin/bash
 set -e
 
+echo "ini- taskname: "
+echo ${TASK_NAME}
+
 # first arg is `-f` or `--some-option`
 # or there are no args
 if [ "$#" -eq 0 ] || [ "${1#-}" != "$1" ]; then
@@ -88,3 +91,6 @@ if [ "$1" = 'cassandra' ]; then
 fi
 
 exec "$@"
+
+echo "fim- taskname: "
+echo ${TASK_NAME}
