@@ -172,4 +172,4 @@ VOLUME /var/lib/cassandra
 # 9042: CQL
 # 9160: thrift service
 EXPOSE 7000 7001 7199 9042 9160
-CMD ["sh", "-c", "cassandra", "-f"]
+CMD ["cassandra", "-f"]

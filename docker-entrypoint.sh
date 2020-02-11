@@ -1,8 +1,10 @@
 #!/bin/bash
 set -e
 
-echo "ini- taskname: "
-echo ${TASK_NAME}
+# Waiting until the cluster ring stabilizes
+wait_time=$(($(cut -d"." -f2 <<< $TASK_NAME) * $WAIT_TIME))
+echo "Waiting $wait_time seconds ..."
+sleep $wait_time
 
 # first arg is `-f` or `--some-option`
 # or there are no args
@@ -80,6 +82,9 @@ if [ "$1" = 'cassandra' ]; then
 		fi
 	done
 
+	echo "VARIAVEL DE AMBIENTE"
+        echo $TASK_NAME
+
 	for rackdc in dc rack; do
 		var="CASSANDRA_${rackdc^^}"
 		val="${!var}"
@@ -91,6 +96,3 @@ if [ "$1" = 'cassandra' ]; then
 fi
 
 exec "$@"
-
-echo "fim- taskname: "
-echo ${TASK_NAME}

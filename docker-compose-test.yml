@@ -12,11 +12,13 @@ services:
   #   - cassandra-node1
   ################################################################        
   cassandra-001:
-    image: lucasfs/cassandra-armhf
+    image: cassandra-armhf
     environment:
       - CASSANDRA_BROADCAST_ADDRESS = cassandra-001
-      - HEAP_NEWSIZE =  12M
-      - MAX_HEAP_SIZE = 64M
+      - HEAP_NEWSIZE=12M
+      - MAX_HEAP_SIZE=64M
+      - TASK_NAME={{.Task.Name}}
+      - WAIT_TIME=60
     deploy:
       restart_policy:
         condition: on-failure
@@ -37,14 +39,15 @@ services:
   #   - cassandra-node2
   ################################################################        
   cassandra-002:
-    image: lucasfs/cassandra-armhf
+    image: cassandra-armhf
     #command: /bin/bash -c "echo 'Waiting for seed node' && sleep 60 && /docker-entrypoint.sh cassandra -f"
     environment:
-      - CASSANDRA_BROADCAST_ADDRESS = cassandra-002
-      - CASSANDRA_SEEDS = cassandra-001
-      - HEAP_NEWSIZE = 12M
-      - MAX_HEAP_SIZE = 64M  
-      - TASK_NAME  =  {{.Task.Name}}
+      - CASSANDRA_BROADCAST_ADDRESS=cassandra-002
+      - CASSANDRA_SEEDS=cassandra-001
+      - HEAP_NEWSIZE=12M
+      - MAX_HEAP_SIZE=64M
+      - TASK_NAME={{.Task.Name}}
+      - WAIT_TIME=10  
     deploy:
       restart_policy:
         condition: on-failure
@@ -52,7 +55,7 @@ services:
         window: 120s
       placement:
         constraints:
-          - node.hostname == rpi-01
+          - node.hostname == rpi-04
     volumes:
       - /mnt/storage/cassandra:/var/lib/cassandra 
  #   ports:
