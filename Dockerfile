@@ -159,7 +159,7 @@ RUN set -eux; \
 COPY docker-entrypoint.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 RUN ln -s /usr/local/bin/docker-entrypoint.sh /docker-entrypoint.sh # backwards compat
-ENTRYPOINT ["/bin/bash", "-c", "docker-entrypoint.sh"]
+ENTRYPOINT ["docker-entrypoint.sh"]
 
 RUN mkdir -p /var/lib/cassandra "$CASSANDRA_CONFIG" \
 	&& chown -R cassandra:cassandra /var/lib/cassandra "$CASSANDRA_CONFIG" \
@@ -172,4 +172,4 @@ VOLUME /var/lib/cassandra
 # 9042: CQL
 # 9160: thrift service
 EXPOSE 7000 7001 7199 9042 9160
-CMD ["cassandra", "-f"]
+CMD ["sh", "-c", "cassandra", "-f"]
