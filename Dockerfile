@@ -56,7 +56,7 @@ ENV GPG_KEYS \
 RUN set -eux; \
 	export GNUPGHOME="$(mktemp -d)"; \
 	for key in $GPG_KEYS; do \
-		gpg --batch --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys "$key"; \
+		gpg --batch --keyserver hkp://keyserver.ubuntu.com --recv-keys "$key"; \
 	done; \
 	gpg --batch --export $GPG_KEYS > /etc/apt/trusted.gpg.d/cassandra.gpg; \
 	command -v gpgconf && gpgconf --kill all || :; \
