@@ -1,11 +1,6 @@
 #!/bin/bash
 set -e
 
-# Waiting until the cluster ring stabilizes
-wait_time=$(($(cut -d"." -f2 <<< $TASK_NAME) * $WAIT_TIME))
-echo "Waiting $wait_time seconds ..."
-sleep $wait_time
-
 # first arg is `-f` or `--some-option`
 # or there are no args
 if [ "$#" -eq 0 ] || [ "${1#-}" != "$1" ]; then
@@ -81,9 +76,6 @@ if [ "$1" = 'cassandra' ]; then
 				-r 's/^(# )?('"$yaml"':).*/\2 '"$val"'/'
 		fi
 	done
-
-	echo "VARIAVEL DE AMBIENTE"
-        echo $TASK_NAME
 
 	for rackdc in dc rack; do
 		var="CASSANDRA_${rackdc^^}"

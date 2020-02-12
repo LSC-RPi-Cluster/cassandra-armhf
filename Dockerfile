@@ -157,9 +157,12 @@ RUN set -eux; \
 	sed -ri 's/^(JVM_PATCH_VERSION)=.*/\1=25/' "$CASSANDRA_CONFIG/cassandra-env.sh"
 
 COPY docker-entrypoint.sh /usr/local/bin/
+COPY boot-wait.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+RUN chmod +x /usr/local/bin/boot-wait.sh
 RUN ln -s /usr/local/bin/docker-entrypoint.sh /docker-entrypoint.sh # backwards compat
-ENTRYPOINT ["docker-entrypoint.sh"]
+RUN ln -s /usr/local/bin/boot-wait.sh /boot-wait.sh # backwards compat
+#ENTRYPOINT ["docker-entrypoint.sh"]
 
 RUN mkdir -p /var/lib/cassandra "$CASSANDRA_CONFIG" \
 	&& chown -R cassandra:cassandra /var/lib/cassandra "$CASSANDRA_CONFIG" \
@@ -172,4 +175,4 @@ VOLUME /var/lib/cassandra
 # 9042: CQL
 # 9160: thrift service
 EXPOSE 7000 7001 7199 9042 9160
-CMD ["cassandra", "-f"]
+CMD ["/bin/bash", "-c","/boot-wait.sh && /docker-entrypoint.sh cassandra -f"]
