@@ -14,39 +14,9 @@ services:
   cassandra-seed:
     image: cassandra-armhf
     environment:
-      - CASSANDRA_BROADCAST_ADDRESS=cassandra-seed
-      - HEAP_NEWSIZE=12M
-      - MAX_HEAP_SIZE=64M
-      #- TASK_NAME={{.Task.Name}}
-      #- WAIT_TIME=60
-    deploy:
-      restart_policy:
-        condition: on-failure
-        max_attempts: 3
-        window: 120s
-      placement:
-        constraints:
-          - node.hostname == rpi-04
-    volumes:
-      - /mnt/storage/cassandra:/var/lib/cassandra 
-    ports:
-      - "9042:9042"
-    networks:
-      - cluster_net
-
-  ################################################################
-  # The Casandra cluster 
-  #   - cassandra-node2
-  ################################################################        
-  cassandra-node:
-    image: cassandra-armhf
-    environment:
-      #- CASSANDRA_BROADCAST_ADDRESS=cassandra-node
-      - CASSANDRA_SEEDS=cassandra-001
-      - HEAP_NEWSIZE=12M
-      - MAX_HEAP_SIZE=64M
-      - TASK_NAME={{.Task.Name}}
-      - WAIT_TIME=40  
+      CASSANDRA_BROADCAST_ADDRESS: "cassandra-seed"
+      HEAP_NEWSIZE: 12M
+      MAX_HEAP_SIZE: 64M
     deploy:
       restart_policy:
         condition: on-failure
@@ -55,6 +25,39 @@ services:
       placement:
         constraints:
           - node.hostname == rpi-03
+    volumes:
+      - /mnt/storage/cassandra:/var/lib/cassandra 
+    networks:
+      - cluster_net
+
+  ################################################################
+  # The Casandra cluster 
+  #   - cassandra-node2
+  ################################################################        
+  cassandra:
+    image: cassandra-armhf
+    environment:
+      #CASSANDRA_BROADCAST_ADDRESS: "cassandra"
+      #CASSANDRA_SEEDS: "cassandra-seed"
+      HEAP_NEWSIZE: 12M
+      MAX_HEAP_SIZE: 64M
+      TASK_NAME: "{{.Task.Name}}"
+      WAIT_TIME: 60
+    entrypoint:
+      - "sh"
+      - "-c"
+      - export CASSANDRA_SEEDS=$$(nrOfTasks=`getent hosts tasks.cassandra | wc -l` ;
+        many=`getent hosts tasks.cassandra | awk '{print $$1}' | sed "/$$(hostname --ip-address)/d"
+        | paste -d, -s -` ; printf '%s' $$( [ $${nrOfTasks} -gt 1 ] && echo $${many} ||
+        echo "$$(hostname --ip-address)" )) ; /boot-wait.sh && /docker-entrypoint.sh cassandra -f
+    deploy:
+      restart_policy:
+        condition: on-failure
+        max_attempts: 3
+        window: 120s
+      placement:
+        constraints:
+          - node.hostname == rpi-04
     volumes:
       - /mnt/storage/cassandra:/var/lib/cassandra 
     networks:

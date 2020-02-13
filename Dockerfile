@@ -17,6 +17,8 @@ RUN set -eux; \
 		procps \
 # "ip" is not required by Cassandra itself, but is commonly used in scripting Cassandra's configuration (since it is so fixated on explicit IP addresses)
 		iproute2 \
+		curl \
+		dnsutils \
 	; \
 	rm -rf /var/lib/apt/lists/*
 
@@ -158,16 +160,34 @@ RUN set -eux; \
 
 COPY docker-entrypoint.sh /usr/local/bin/
 COPY boot-wait.sh /usr/local/bin/
+COPY node-repair-after-full-boot.sh /
+COPY replace_node_patch.sh /
+
 RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 RUN chmod +x /usr/local/bin/boot-wait.sh
+RUN chmod +x /node-repair-after-full-boot.sh
+RUN chmod +x /replace_node_patch.sh
+
 RUN ln -s /usr/local/bin/docker-entrypoint.sh /docker-entrypoint.sh # backwards compat
 RUN ln -s /usr/local/bin/boot-wait.sh /boot-wait.sh # backwards compat
-#ENTRYPOINT ["docker-entrypoint.sh"]
+
+RUN cat replace_node_patch.sh >> $CASSANDRA_CONFIG/cassandra-env.sh \
+    && rm replace_node_patch.sh
+
+ENTRYPOINT ["docker-entrypoint.sh"]
+
+RUN mkdir -p /root/.cassandra /home/cassandra \
+  && echo "[connection]\nclient_timeout=40" > /root/.cassandra/cqlshrc
 
 RUN mkdir -p /var/lib/cassandra "$CASSANDRA_CONFIG" \
 	&& chown -R cassandra:cassandra /var/lib/cassandra "$CASSANDRA_CONFIG" \
 	&& chmod 777 /var/lib/cassandra "$CASSANDRA_CONFIG"
+
 VOLUME /var/lib/cassandra
+
+ENV CASSANDRA_SEEDS=auto \
+    CASSANDRA_BROADCAST_ADDRESS=auto \
+    CASSANDRA_LISTEN_ADDRESS=auto
 
 # 7000: intra-node communication
 # 7001: TLS intra-node communication
