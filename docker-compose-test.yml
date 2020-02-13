@@ -14,7 +14,7 @@ services:
   cassandra-seed:
     image: cassandra-armhf
     environment:
-      CASSANDRA_BROADCAST_ADDRESS: "auto"
+      CASSANDRA_BROADCAST_ADDRESS: "cassandra-seed"
       HEAP_NEWSIZE: 12M
       MAX_HEAP_SIZE: 64M
     deploy:
@@ -37,13 +37,13 @@ services:
   cassandra:
     image: cassandra-armhf
     environment:
-      CASSANDRA_BROADCAST_ADDRESS: "auto"
+      CASSANDRA_BROADCAST_ADDRESS: "cassandra"
       #CASSANDRA_SEEDS: "cassandra-seed"
       SEEDS_SERVICE: "cassandra-seed"
       HEAP_NEWSIZE: 12M
       MAX_HEAP_SIZE: 64M
       TASK_NAME: "{{.Task.Name}}"
-      WAIT_TIME: 120
+      WAIT_TIME: 70
     deploy:
       restart_policy:
         condition: on-failure
