@@ -56,7 +56,7 @@ if [ "$1" = 'cassandra' ]; then
 	fi
 	: ${CASSANDRA_SEEDS:="$CASSANDRA_BROADCAST_ADDRESS"}
 
-  if [ -z "$SEEDS_SERVICE" ]; then
+  if ! [ -z "$SEEDS_SERVICE" ]; then
     tasks=`getent hosts tasks.$SEEDS_SERVICE | awk '{print $1}'`
     CASSANDRA_SEEDS=$(echo "$tasks" | paste -d, -s -)
 
