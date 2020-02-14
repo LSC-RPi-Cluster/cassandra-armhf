@@ -14,7 +14,7 @@ services:
   cassandra-seed:
     image: cassandra-armhf
     environment:
-      CASSANDRA_BROADCAST_ADDRESS: "cassandra-seed"
+      CASSANDRA_BROADCAST_ADDRESS: "tasks.cassandra-seed"
       HEAP_NEWSIZE: 12M
       MAX_HEAP_SIZE: 64M
     deploy:
@@ -37,7 +37,7 @@ services:
   cassandra:
     image: cassandra-armhf
     environment:
-      CASSANDRA_BROADCAST_ADDRESS: "cassandra"
+      CASSANDRA_BROADCAST_ADDRESS: "tasks.cassandra"
       #CASSANDRA_SEEDS: "cassandra-seed"
       SEEDS_SERVICE: "cassandra-seed"
       HEAP_NEWSIZE: 12M

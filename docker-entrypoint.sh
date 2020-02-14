@@ -46,9 +46,12 @@ if [ "$1" = 'cassandra' ]; then
 
 	: ${CASSANDRA_BROADCAST_ADDRESS="$CASSANDRA_LISTEN_ADDRESS"}
 
-	if [ "$CASSANDRA_BROADCAST_ADDRESS" = 'auto' ]; then
-		CASSANDRA_BROADCAST_ADDRESS="$(_ip_address)"
+	if ! [ -z "$CASSANDRA_BROADCAST_ADDRESS" ]; then
+		CASSANDRA_BROADCAST_ADDRESS=$(hostname -i)
 	fi
+	# if [ "$CASSANDRA_BROADCAST_ADDRESS" = 'auto' ]; then
+	# 	CASSANDRA_BROADCAST_ADDRESS="$(_ip_address)"
+	# fi
 	: ${CASSANDRA_BROADCAST_RPC_ADDRESS:=$CASSANDRA_BROADCAST_ADDRESS}
 
 	if [ -n "${CASSANDRA_NAME:+1}" ]; then
