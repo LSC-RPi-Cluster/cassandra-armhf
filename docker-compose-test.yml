@@ -1,4 +1,4 @@
-version: "3.3"
+version: "3.8"
 
 networks:
   cluster_net:
@@ -9,22 +9,23 @@ services:
 
   ################################################################
   # The Casandra cluster 
-  #   - cassandra-node1
+  #   - cassandra-seed
   ################################################################        
   cassandra-seed:
-    image: cassandra-armhf
+    image: lucasfs/cassandra-armhf
     environment:
-      CASSANDRA_BROADCAST_ADDRESS: "tasks.cassandra-seed"
       HEAP_NEWSIZE: 12M
       MAX_HEAP_SIZE: 64M
+      CASSANDRA_NUM_TOKENS: 8
     deploy:
       restart_policy:
         condition: on-failure
         max_attempts: 3
         window: 120s
       placement:
+        max_replicas_per_node: 1
         constraints:
-          - node.hostname == rpi-03
+          - node.labels.type == primary
     volumes:
       - /mnt/storage/cassandra:/var/lib/cassandra 
     networks:
@@ -32,26 +33,26 @@ services:
 
   ################################################################
   # The Casandra cluster 
-  #   - cassandra-node2
+  #   - cassandra-node
   ################################################################        
   cassandra:
-    image: cassandra-armhf
+    image: lucasfs/cassandra-armhf
     environment:
-      CASSANDRA_BROADCAST_ADDRESS: "tasks.cassandra"
-      #CASSANDRA_SEEDS: "cassandra-seed"
       SEEDS_SERVICE: "cassandra-seed"
       HEAP_NEWSIZE: 12M
       MAX_HEAP_SIZE: 64M
       TASK_NAME: "{{.Task.Name}}"
       WAIT_TIME: 70
+      CASSANDRA_NUM_TOKENS: 8
     deploy:
       restart_policy:
         condition: on-failure
         max_attempts: 3
         window: 120s
       placement:
+        max_replicas_per_node: 1
         constraints:
-          - node.hostname == rpi-04
+          - node.labels.type == worker
     volumes:
       - /mnt/storage/cassandra:/var/lib/cassandra 
     networks:
