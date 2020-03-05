@@ -49,9 +49,6 @@ if [ "$1" = 'cassandra' ]; then
 	if ! [ -z "$CASSANDRA_BROADCAST_ADDRESS" ]; then
 		CASSANDRA_BROADCAST_ADDRESS=$(hostname -i)
 	fi
-	# if [ "$CASSANDRA_BROADCAST_ADDRESS" = 'auto' ]; then
-	# 	CASSANDRA_BROADCAST_ADDRESS="$(_ip_address)"
-	# fi
 	: ${CASSANDRA_BROADCAST_RPC_ADDRESS:=$CASSANDRA_BROADCAST_ADDRESS}
 
 	if [ -n "${CASSANDRA_NAME:+1}" ]; then
@@ -60,10 +57,11 @@ if [ "$1" = 'cassandra' ]; then
 	: ${CASSANDRA_SEEDS:="$CASSANDRA_BROADCAST_ADDRESS"}
 
   if ! [ -z "$SEEDS_SERVICE" ]; then
+	echo "SEEDS_SERVICE: $SEEDS_SERVICE"
     tasks=`getent hosts tasks.$SEEDS_SERVICE | awk '{print $1}'`
     CASSANDRA_SEEDS=$(echo "$tasks" | paste -d, -s -)
 
-    echo "cassandra_seeds set as: $CASSANDRA_SEEDS"
+    echo "CASSANDRA_SEEDS set as: $CASSANDRA_SEEDS"
   fi
 
 	_sed-in-place "$CASSANDRA_CONFIG/cassandra.yaml" \
@@ -81,6 +79,7 @@ if [ "$1" = 'cassandra' ]; then
 	; do
 		var="CASSANDRA_${yaml^^}"
 		val="${!var}"
+		echo "$var: $val"
 		if [ "$val" ]; then
 			_sed-in-place "$CASSANDRA_CONFIG/cassandra.yaml" \
 				-r 's/^(# )?('"$yaml"':).*/\2 '"$val"'/'
