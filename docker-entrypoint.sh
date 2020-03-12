@@ -76,6 +76,27 @@ if [ "$1" = 'cassandra' ]; then
 		num_tokens \
 		rpc_address \
 		start_rpc \
+		memtable_heap_space_in_mb \
+		memtable_offheap_space_in_mb \
+		concurrent_reads \
+		concurrent_writes \
+		concurrent_counter_writes \
+		concurrent_materialized_view_writes \
+		commitlog_sync \
+		commitlog_segment_size_in_mb \
+		commitlog_sync_period_in_ms \
+		commitlog_sync_batch_window_in_ms \
+		auto_snapshot \
+		read_request_timeout_in_ms \
+		range_request_timeout_in_ms \
+		write_request_timeout_in_ms \
+		counter_write_request_timeout_in_ms \
+		cas_contention_timeout_in_ms \
+		truncate_request_timeout_in_ms \
+		request_timeout_in_ms \
+		native_transport_max_threads \
+		rpc_min_threads \
+		rpc_max_threads \
 	; do
 		var="CASSANDRA_${yaml^^}"
 		val="${!var}"
