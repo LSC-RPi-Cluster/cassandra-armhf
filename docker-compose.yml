@@ -31,7 +31,9 @@ services:
     networks:
       - cluster_net
     ports:
-      - "9042:9042"
+      - target: 9042
+        published: 9042
+        mode: host
 
   ################################################################
   # The Casandra cluster 
@@ -59,3 +61,7 @@ services:
       - /mnt/storage/cassandra:/var/lib/cassandra 
     networks:
       - cluster_net
+    ports:
+      - target: 9042
+        published: 9042
+        mode: host
