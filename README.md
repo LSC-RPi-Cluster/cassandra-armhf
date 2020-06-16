@@ -11,7 +11,7 @@ This repository describes the use of custom Docker images for running Apache Cas
 In a swarm manager node, execute the command line bellow to create a new overlay network named "cassandra-net":
 
 ```
-docker network create -d overlay cassandra-net
+docker network create -d overlay --attachable cassandra-net
 ```
 
 ## 2. Swarm Nodes Labels
