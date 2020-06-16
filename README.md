@@ -20,6 +20,12 @@ Set the type label in nodes to define groups for service scale command:
 ```
 docker node update --label-add type=(slave or master) node-id
 ```
+
+To list with one command all node labels in swarm cluster, you can run:
+```
+docker node ls -q | xargs docker node inspect -f '[{{ .Description.Hostname }}]: {{ .Spec.Labels.type }}'
+```
+
 ## 3. Storage
 Create the directories that will be mapped as volumes to the Cassandra services data storage.
 
