@@ -7,20 +7,21 @@ networks:
   
 services:  
 
-  ################################################################
-  # The Casandra cluster 
-  #   - cassandra-seed
-  ################################################################        
+  ##################################
+  #         CASSANDRA SEED         #
+  ##################################         
   seed:
     image: lucasfs/cassandra-armhf
     environment:
-      - HEAP_NEWSIZE=12M
-      - MAX_HEAP_SIZE=64M
-      - CASSANDRA_NUM_TOKENS=16
+      - MAX_HEAP_SIZE=430M
+      - HEAP_NEWSIZE=142M
+      - CASSANDRA_READ_REQUEST_TIMEOUT_IN_MS=60000
+      - CASSANDRA_WRITE_REQUEST_TIMEOUT_IN_MS=60000
+      - CASSANDRA_REQUEST_TIMEOUT_IN_MS=60000
     deploy:
       restart_policy:
         condition: on-failure
-        max_attempts: 3
+        max_attempts: 5
         window: 120s
       placement:
         max_replicas_per_node: 1
@@ -35,23 +36,24 @@ services:
         published: 9042
         mode: host
 
-  ################################################################
-  # The Casandra cluster 
-  #   - cassandra-node
-  ################################################################        
+  ##################################
+  #         CASSANDRA NODE         #
+  ##################################        
   node:
     image: lucasfs/cassandra-armhf
     environment:
       - SEEDS_SERVICE=seed
-      - HEAP_NEWSIZE=12M
-      - MAX_HEAP_SIZE=64M
+      - MAX_HEAP_SIZE=430M
+      - HEAP_NEWSIZE=142M
       - TASK_NAME={{.Task.Name}}
-      - WAIT_TIME=100
-      - CASSANDRA_NUM_TOKENS=16
+      - WAIT_TIME=200
+      - CASSANDRA_READ_REQUEST_TIMEOUT_IN_MS=60000
+      - CASSANDRA_WRITE_REQUEST_TIMEOUT_IN_MS=60000
+      - CASSANDRA_REQUEST_TIMEOUT_IN_MS=60000
     deploy:
       restart_policy:
         condition: on-failure
-        max_attempts: 3
+        max_attempts: 10
         window: 120s
       placement:
         max_replicas_per_node: 1
